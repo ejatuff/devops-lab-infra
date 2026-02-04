@@ -1,4 +1,4 @@
-# Laboratorio DevOps – Kubernetes, Terraform & Ansible
+# Laboratorio DevOps – Kubernetes, Terraform y Ansible
 
 Este repositorio contiene un laboratorio práctico de DevOps enfocado en:
 - Infraestructura como código
