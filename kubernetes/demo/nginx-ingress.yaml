@@ -3,8 +3,14 @@ kind: Ingress
 metadata:
   name: nginx-demo-ingress
   namespace: demo
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-clusterissuer
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - nginx.demo.local
+      secretName: nginx-demo-tls
   rules:
     - host: nginx.demo.local
       http:
