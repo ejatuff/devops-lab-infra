@@ -1,0 +1,28 @@
+---
+- name: Asegurar paquete openssh-server
+  ansible.builtin.apt:
+    name: openssh-server
+    state: present
+
+- name: Configurar sshd_config (hardening básico)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^{{ item.key }}"
+    line: "{{ item.key }} {{ item.value }}"
+    state: present
+    backrefs: false
+  loop:
+    - { key: "Port", value: "{{ ssh_port }}" }
+    - { key: "PermitRootLogin", value: "{{ ssh_permit_root_login }}" }
+    - { key: "PasswordAuthentication", value: "{{ ssh_password_authentication }}" }
+    - { key: "PubkeyAuthentication", value: "{{ ssh_pubkey_authentication }}" }
+  notify: Restart ssh
+
+- name: Eliminar configuraciones inseguras heredadas
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item }}"
+    state: absent
+  loop:
+    - "^ChallengeResponseAuthentication"
+    - "^UsePAM yes"

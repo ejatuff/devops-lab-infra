@@ -1,0 +1,32 @@
+---
+- name: Actualizar cache apt
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade paquetes base
+  ansible.builtin.apt:
+    upgrade: safe
+
+- name: Instalar paquetes base
+  ansible.builtin.apt:
+    name:
+      - qemu-guest-agent
+      - curl
+      - ca-certificates
+      - vim
+      - htop
+      - net-tools
+      - iproute2
+      - chrony
+      - util-linux
+    state: present
+
+- name: Habilitar servicios base
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - qemu-guest-agent
+    - chrony

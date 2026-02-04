@@ -1,0 +1,51 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "~> 0.66"
+    }
+  }
+}
+
+provider "proxmox" {
+  endpoint  = "https://192.168.150.127:8006/api2/json"
+  api_token = "terraform@pve!terraform-token=af827ede-db2e-4afa-bdd9-98ab88e376d8"
+  insecure  = true
+}
+
+
+resource "proxmox_virtual_environment_vm" "test_vm" {
+  name      = "tf-test-vm"
+  node_name = "pve"
+  tags      = ["terraform", "devops", "lab"]
+
+  clone {
+    vm_id = 9000
+  }
+
+  cpu {
+    cores = 2
+  }
+
+  memory {
+    dedicated = 2048
+  }
+
+  disk {
+    datastore_id = "local-lvm"
+    interface    = "scsi0"
+    size         = 10
+  }
+
+  network_device {
+    bridge = "vmbr0"
+  }
+
+  initialization {
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+  }
+}

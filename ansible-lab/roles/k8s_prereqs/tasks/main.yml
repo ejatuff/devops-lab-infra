@@ -1,0 +1,92 @@
+- name: Deshabilitar swap (runtime)
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Deshabilitar swap en /etc/fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*swap.*)$'
+    replace: '# \1'
+
+- name: Cargar módulos kernel requeridos
+  ansible.builtin.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ k8s_kernel_modules }}"
+
+- name: Persistir módulos kernel
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Configurar sysctl para Kubernetes
+  ansible.builtin.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  loop: "{{ k8s_sysctl | dict2items }}"
+
+- name: Generar configuración default de containerd
+  ansible.builtin.command: containerd config default
+  register: containerd_config
+  changed_when: false
+
+- name: Escribir configuración de containerd
+  ansible.builtin.copy:
+    dest: /etc/containerd/config.toml
+    content: "{{ containerd_config.stdout }}"
+  notify: Restart containerd
+
+- name: Asegurar SystemdCgroup en containerd
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
+  notify: Restart containerd
+
+- name: Instalar dependencias Kubernetes
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present
+
+- name: Agregar clave GPG Kubernetes
+  ansible.builtin.get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes.gpg
+    mode: '0644'
+
+- name: Agregar repo Kubernetes
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [signed-by=/etc/apt/keyrings/kubernetes.gpg]
+      https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+    state: present
+    filename: kubernetes
+
+- name: Instalar componentes Kubernetes
+  ansible.builtin.apt:
+    name: "{{ k8s_packages }}"
+    state: present
+    update_cache: true
+    allow_downgrade: true
+
+- name: Bloquear versión de paquetes Kubernetes
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Habilitar kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: true
+

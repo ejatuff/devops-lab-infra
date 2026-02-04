@@ -1,0 +1,13 @@
+---
+- name: Baseline todos los nodos
+  hosts: all
+  become: true
+  roles:
+    - base
+    - ssh_hardening
+
+- name: Cluster k8s
+  hosts: master:worker1
+  roles:
+    - docker
+    - k8s_prereqs

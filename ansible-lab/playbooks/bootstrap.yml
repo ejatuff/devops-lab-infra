@@ -1,0 +1,41 @@
+---
+- name: Bootstrap base para VMs Proxmox (Debian)
+  hosts: lab
+  gather_facts: true
+
+  tasks:
+    - name: Asegurar que apt está actualizado (cache)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Actualizar paquetes (safe upgrade)
+      ansible.builtin.apt:
+        upgrade: safe
+
+    - name: Instalar paquetes base
+      ansible.builtin.apt:
+        name:
+          - qemu-guest-agent
+          - curl
+          - ca-certificates
+          - vim
+          - htop
+          - net-tools
+          - iproute2
+        state: present
+
+    - name: Habilitar y arrancar qemu-guest-agent
+      ansible.builtin.systemd:
+        name: qemu-guest-agent
+        enabled: true
+        state: started
+
+    - name: Confirmar estado del servicio qemu-guest-agent
+      ansible.builtin.command: systemctl is-active qemu-guest-agent
+      register: qga_status
+      changed_when: false
+
+    - name: Mostrar estado qemu-guest-agent
+      ansible.builtin.debug:
+        msg: "qemu-guest-agent: {{ qga_status.stdout }}"

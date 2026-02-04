@@ -1,0 +1,16 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.crash.log
+
+# Ansible
+*.retry
+
+# Kubernetes
+*.key
+*.crt
+
+# OS / editor
+.DS_Store
+*.swp
