@@ -1,0 +1,21 @@
+#1. hay que instalar MetalLB
+#kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+#2. se crea el yamel metallb-pool.yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: pool-lab
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.150.75/32
+  - 192.168.150.76/32
+  - 192.168.150.77/32
+  - 192.168.150.78/32
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-lab
+  namespace: metallb-system
+spec: {}
