@@ -14,6 +14,7 @@ groups:
   bastion: "'bastion' in proxmox_tags"
   master: "'master' in proxmox_tags"
   workers: "'worker' in proxmox_tags"
+  nfs: "'nfs' in proxmox_tags"
 
 compose:
   ansible_host: proxmox_ip_address
