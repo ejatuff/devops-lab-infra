@@ -8,16 +8,16 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint  = "https://192.168.150.127:8006/api2/json"
-  api_token = "terraform@pve!terraform-token=af827ede-db2e-4afa-bdd9-98ab88e376d8"
-  insecure  = true
+  endpoint  = var.proxmox_api_url
+  api_token = "${var.proxmox_api_user}=${var.proxmox_api_token}"
+  insecure  = var.proxmox_api_tls_insecure
 }
 
 module "bastion" {
   source       = "./modules/vm"
-  providers = {proxmox = proxmox}
+  providers    = { proxmox = proxmox }
   name         = "bastion-01"
-  role         = "bastion"    
+  role         = "bastion"
   node_name    = "pve"
   vm_id        = 9000
   cores        = 1
@@ -29,7 +29,7 @@ module "bastion" {
 
 module "master" {
   source       = "./modules/vm"
-  providers = {proxmox = proxmox}
+  providers    = { proxmox = proxmox }
   name         = "k8s-master-01"
   role         = "k8s-master-01"
   node_name    = "pve"
@@ -43,7 +43,7 @@ module "master" {
 
 module "worker1" {
   source       = "./modules/vm"
-  providers = {proxmox = proxmox}
+  providers    = { proxmox = proxmox }
   name         = "k8s-worker-01"
   role         = "k8s-worker-01"
   node_name    = "pve"
@@ -53,4 +53,23 @@ module "worker1" {
   disk_size    = 10
   bridge       = "vmbr0"
   datastore_id = "local-lvm"
+}
+
+module "nfs" {
+  source    = "./modules/vm"
+  providers = { proxmox = proxmox }
+  name      = "nfs-01"
+  role      = "nfs"
+  node_name = "pve"
+  vm_id     = 9000
+  cores     = 2
+  memory    = 2048
+  disk_size = 50
+  bridge       = "vmbr0"
+  datastore_id = "local-lvm"
+  password_hash = var.password_hash
+
+/*  ipv4_address = ""
+  ipv4_gateway = "192.168.150.1"
+*/
 }
