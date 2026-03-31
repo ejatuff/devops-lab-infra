@@ -1,4 +1,17 @@
 ---
+###
+#está fallando el repo APT de Kubernetes v1.29 por un problema de firma OpenPGP que Debian/apt empezó a rechazar: sqv indica que el repo usa una Signature Packet v3, considerada insegura desde 2026-02-01.
+###deshabilitamos temporalmente el repo de Kubernetes en esas VMs
+- name: Buscar archivos de repos Kubernetes
+  shell: "grep -RlE 'pkgs\\.k8s\\.io|packages\\.k8s\\.io' /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null || true"
+  register: k8s_repo_files
+  changed_when: false
+
+- name: Deshabilitar repo(s) Kubernetes temporalmente
+  command: mv {{ item }} {{ item }}.disabled
+  loop: "{{ k8s_repo_files.stdout_lines }}"
+  when: k8s_repo_files.stdout_lines | length > 0
+#####  
 - name: Actualizar cache apt
   ansible.builtin.apt:
     update_cache: true

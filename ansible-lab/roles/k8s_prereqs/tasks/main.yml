@@ -61,13 +61,13 @@
     dest: /etc/apt/keyrings/kubernetes.gpg
     mode: '0644'
 
-- name: Agregar repo Kubernetes
-  ansible.builtin.apt_repository:
-    repo: >
-      deb [signed-by=/etc/apt/keyrings/kubernetes.gpg]
-      https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
-    state: present
-    filename: kubernetes
+#- name: Agregar repo Kubernetes
+#  ansible.builtin.apt_repository:
+#    repo: >
+#      deb [signed-by=/etc/apt/keyrings/kubernetes.gpg]
+#      https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+#    state: present
+#    filename: kubernetes
 
 - name: Instalar componentes Kubernetes
   ansible.builtin.apt:

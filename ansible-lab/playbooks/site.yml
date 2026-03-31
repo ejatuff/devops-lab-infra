@@ -11,3 +11,4 @@
   roles:
     - docker
     - k8s_prereqs
+    - mount_nfs

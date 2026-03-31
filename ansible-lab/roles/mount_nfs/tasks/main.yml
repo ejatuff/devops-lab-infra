@@ -1,0 +1,22 @@
+---
+- name: Deshabilitar repo APT de Kubernetes temporalmente si existe
+  shell: |
+    for f in /etc/apt/sources.list.d/*; do
+      [ -f "$f" ] || continue
+      if grep -qE 'pkgs\.k8s\.io|packages\.k8s\.io' "$f"; then
+        mv "$f" "${f}.disabled"
+      fi
+    done
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+#update_cache: yes ya reemplaza el apt update
+- name: Actualizar cache de apt
+  apt:
+    update_cache: yes
+
+- name: Instalar paquetes NFS
+  apt:
+    name: "{{ nfs_packages }}"
+    state: present
